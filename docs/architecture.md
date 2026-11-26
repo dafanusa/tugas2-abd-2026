@@ -80,7 +80,7 @@ baru di luar label yang telah tersedia pada dataset.
 | Parameter | Keterangan |
 |---|---|
 | **Nama Dataset** | SIAGA Pantura Hazard Data — subset `flood` |
-| **Sumber Resmi** | [Hugging Face — ethanchristian/siaga-pantura-hazard-data](https://huggingface.co/datasets/ethanchristian/siaga-pantura-hazard-data) |
+| **Sumber Resmi** | [Hugging Face — ethanchrstian/siaga-pantura-hazard-data](https://huggingface.co/datasets/ethanchrstian/siaga-pantura-hazard-data) |
 | **Subset yang Digunakan** | `flood` saja. Subset `drought` dan `risk_history` tidak digunakan dalam proyek ini. |
 | **Split** | `train` |
 | **Format Awal** | Parquet |
@@ -228,25 +228,91 @@ Untuk menjaga aplikasi tetap responsif:
 
 ------------------------------------------------------------------------
 
-
 ## 5. Rencana Tampilan Dashboard (Wireframe & Fitur UI)
 
-1. **Header & Key Metrics KPI:**
-   - 4 Kartu metrik ringkasan (Total data, rata-rata, rekor ekstrem, tren persentase).
-2. **Filter Interaktif (Sidebar):**
-   - Pemilihan stasiun/wilayah, slider rentang tanggal, filter kategori.
-3. **Panel Visualisasi Utama:**
-   - **Tab 1 — Tren Temporal:** Line chart interaktif dengan range slider dan moving average.
-   - **Tab 2 — Analisis Distribusi & Anomali:** Box plot dan deteksi pencilan.
-   - **Tab 3 — Peta Wilayah / Spasial:** Choropleth map sebaran provinsi atau scatter map koordinat stasiun.
-   - **Tab 4 — Tabel Data Detail:** Tampilan cuplikan data terfilter dengan opsi download ringkasan CSV.
+Dashboard **Pantura Flood** dirancang dengan tampilan ringkas,
+informatif, dan mudah digunakan.
 
----
+### 5.1 Header & Key Metrics KPI
+
+Empat kartu ringkasan yang direncanakan:
+
+1.  **Total Catatan Pengamatan** — jumlah baris data sesuai filter
+    aktif.
+2.  **Jumlah Catatan Label Positif** — jumlah baris dengan
+    `flood_label = 1`, bukan jumlah kejadian banjir terverifikasi.
+3.  **Proporsi Label Positif** — persentase catatan berlabel positif
+    terhadap seluruh catatan pada filter aktif.
+4.  **Rata-rata Curah Hujan Harian** — rata-rata `rain_1d` pada data
+    terfilter.
+
+Nilai KPI dihitung dari dataset, bukan ditetapkan sebagai angka statis.
+
+### 5.2 Filter Interaktif (Sidebar)
+
+-   Rentang tahun: 2015–2024.
+-   Pilihan bulan: Januari–Desember.
+-   Pilihan kecamatan (`district_id`).
+-   Kategori wilayah pesisir (`coastal`), mengikuti definisi sumber.
+-   Tombol reset filter.
+
+Filter hanya menampilkan pilihan yang tersedia pada data yang berhasil
+dimuat.
+
+### 5.3 Panel Visualisasi Utama
+
+**Tab 1 — Tren Temporal**
+
+-   Grafik tren jumlah catatan berlabel positif per bulan dan tahun.
+-   Grafik tren rata-rata curah hujan.
+-   Perbandingan pola antar-tahun.
+
+**Tab 2 — Analisis Curah Hujan dan Debit Sungai**
+
+-   Grafik curah hujan berdasarkan jendela 1, 3, 7, dan 30 hari.
+-   Grafik debit sungai saat pengamatan dan rata-rata tujuh hari.
+-   Scatter plot untuk mengeksplorasi hubungan curah hujan, debit
+    sungai, dan label potensi banjir.
+-   Grafik perubahan debit sungai tiga hari.
+
+**Tab 3 — Peta Wilayah / Spasial**
+
+-   Peta choropleth atau peta kecamatan berdasarkan proporsi catatan
+    `flood_label = 1`.
+-   Peta perbandingan wilayah berdasarkan jumlah catatan positif.
+-   Peta hanya ditampilkan setelah `district_id` berhasil dicocokkan
+    dengan geometri kecamatan yang sesuai.
+-   Jika pencocokan geometri belum tersedia atau tidak lengkap,
+    tampilkan tabel/ranking wilayah sebagai alternatif dan jelaskan
+    keterbatasannya.
+
+**Tab 4 — Tabel Data Detail**
+
+-   Tabel data sesuai filter aktif.
+-   Kolom utama: tanggal, kecamatan, curah hujan, debit sungai, kategori
+    pesisir, dan `flood_label`.
+-   Opsi unduh data hasil filter atau tabel agregasi dalam format CSV.
+
+**Catatan penyajian:** Dashboard menggunakan istilah "catatan berlabel
+positif" atau "indikator potensi banjir" agar tidak menyamakan label
+dataset dengan kejadian banjir aktual.
+
+------------------------------------------------------------------------
 
 ## 6. Pembagian Tugas & Tanggung Jawab Anggota Tim
 
-| Anggota Tim | Tanggung Jawab Utama di Phase 1 - 4 |
-|-------------|-------------------------------------|
-| Mahasiswa 1 | Desain arsitektur, data pipeline, dan integrasi Dockerfile |
-| Mahasiswa 2 | Penyusunan kueri analitik DuckDB dan optimasi partisi Parquet |
-| Mahasiswa 3 | Desain antarmuka Streamlit, visualisasi Plotly, dan deployment ke HF Spaces |
+Tim terdiri dari **2 anggota**, sehingga peran frontend dan backend dibagi bersama.
+
+| Anggota Tim | Tanggung Jawab Utama Phase 1–4 |
+|---|---|
+| **Rizqullah Atsir Dafa Childyasa Nusa** (Project Lead / Data Engineering, Analytics & Backend) | Koordinasi perencanaan dan pembagian kerja proyek; unduh dan pemeriksaan dataset subset `flood`; eksplorasi dan validasi kualitas data (tipe data, nilai kosong, duplikasi, rentang waktu dan nilai); pipeline Parquet dengan DuckDB dan Polars; data cleaning, seleksi kolom, transformasi, serta agregasi temporal dan wilayah; kueri dan fungsi analitik untuk KPI, tren, dan ringkasan; optimasi pembacaan data dan caching sisi backend; konfigurasi aplikasi dan deployment ke Hugging Face Spaces |
+| **Ayesha Fahrelia Ningrum** (Frontend Developer / UI/UX & Dashboard Interface) | Penyusunan kebutuhan tampilan dari sasaran pengguna; wireframe, layout, dan rancangan UI/UX dashboard; implementasi antarmuka Streamlit (header, sidebar, kartu KPI, tab, panel grafik, tabel); tata letak visualisasi tren temporal, curah hujan, debit sungai, dan peta wilayah; filter tahun, bulan, kecamatan, dan kategori wilayah pesisir; konsistensi warna, tipografi, ikon, dan spacing; pemeriksaan tampilan di berbagai ukuran layar |
+| **Bersama** | Menyepakati kebutuhan pengguna, fitur dashboard, dan definisi metrik; menentukan format data atau fungsi penghubung backend dan frontend; integrasi hasil pengolahan data dengan tampilan dashboard; memastikan angka, label, grafik, tabel, dan peta konsisten dengan hasil analisis; pengujian interaktivitas dan performa serta perbaikan; penyusunan dokumentasi, laporan, presentasi, dan demonstrasi produk |
+
+------------------------------------------------------------------------
+
+**Batasan proyek:** Pantura Flood merupakan dashboard eksplorasi data
+historis 2015–2024. Dashboard menganalisis indikator potensi banjir
+yang tersedia pada subset `flood`; dashboard tidak mengklaim sebagai
+sistem real-time, sistem peringatan dini, atau verifikasi kejadian
+banjir aktual.
